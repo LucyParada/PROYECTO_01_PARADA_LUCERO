@@ -1,0 +1,333 @@
+from typing import Counter, OrderedDict
+from lifestore_file import lifestore_products, lifestore_sales, lifestore_searches     #Extracción de la bases de datos anual
+
+
+Menu = ["Bienvenido a LIFESTORE su tienda segura"]                                     #Menu para entrar a la tienda
+Menu_dos = input ("Nombre:")                                                           #Dato para entrar
+print( Menu, Menu_dos)
+
+
+
+#Esqueleto_de_sales: lifestore_sales = [id_sale, id_product, score (from 1 to 5), date, refund (1 for true or 0 to false)]
+print(lifestore_sales[0][3][3:5])
+#A) FILTRAR DATOS
+ventas = []                                     #Lista vacia para poder llenarla con los datos que requiero
+for sale in lifestore_sales:                    #Con este for se filtra la lista para sacar los reembolsos y tener solo las ventas válidas
+    refund = sale[4] 
+    if refund == 1:                             #Si tiene el num.1 que es true lo omite y continua
+       continue
+    else:
+        ventas.append(sale)
+        for venta in ventas:                    #Esto es ya sin los reembolsos
+            print(venta)
+
+#B) SEPARAR POR MESES
+meses = ['/01/','/02/','/03/','/04/','/05/','/06/','/07/','/08/','/09/','/10/','/11/','/12/'] #Fijamos la lista de los meses
+
+ventas_mensuales = []                                                                         #Lista vacia que voy a llenar con los meses, id_sales y date
+for mes in meses:
+    lista_vacia = []
+    ventas_mensuales.append(lista_vacia)                                                      #Junto lo que ya tengo con lo nuevo
+
+for venta in ventas:
+
+    id_sale = venta[0]
+    date = venta[3]                                                                           #para sacar estos datos en específico
+
+    contador_mensual = 0                                                                      #Contador mensual para la divisón
+
+    for mes in meses:
+        if mes in date:
+            ventas_mensuales[contador_mensual].append(id_sale)
+            continue
+        contador_mensual = contador_mensual + 1                                              #Ya tengo los datos: mes, id venta, fecha en una lista
+
+print(ventas_mensuales)
+print('Ventas mensuales:')
+contador_mensual = 0
+for venta_mensual in ventas_mensuales:
+    print(f'En el mes {meses[contador_mensual]} hubieron {len(venta_mensual)} ventas')
+    contador_mensual = contador_mensual + 1                                                 #Ya tengo separadas las ventas por mes con total de productos vendidos
+print(venta_mensual)
+
+#C) CONTAR EN DINERO LAS VENTAS /Sin contar refund
+
+utilidades_mensuales = []                                                               #Se crea una lista vacia para llenar con los datos que me sirven
+for venta_mensual in ventas_mensuales:
+    utilidad_del_mes = 0
+    for id_venta in venta_mensual:                                                      #Para sacar las ventas de cada mes
+        indice_venta = id_venta - 1
+        info_venta = lifestore_sales[indice_venta]
+        id_producto = info_venta[1]
+        indice_de_prod = id_producto - 1                                                #Con el indice del producto relaciona el id del producto
+        info_prod = lifestore_products[indice_de_prod]
+        precio_de_prod = info_prod[2]                                                    #Precio del producto en la lista lo ubico
+        utilidad_del_mes = utilidad_del_mes + precio_de_prod
+    utilidades_mensuales.append(utilidad_del_mes)
+
+print('Ganancia mensuales:')
+print(utilidades_mensuales)
+utilidades_mensuales.sort(reverse=True)
+print(utilidades_mensuales)
+
+
+ganancia_mes = []
+for mes, ganancia in enumerate(utilidades_mensuales):                                   #Para agregarle el mes a las ganancias
+    la_utilidad = [ganancia, mes]
+    ganancia_mes.append(la_utilidad)
+#print(ganancia_mes)
+
+for ganan in ganancia_mes:
+    print(ganan)
+
+ganancia_mes.sort(reverse=True)                                                         #Para ordenar la lista
+
+print('Ganancias ordenadas por meses más productivos:')
+
+for gana in ganancia_mes:
+    print(gana)
+
+#D)NUMERO DE VENTAS MENSAULES:
+
+monto_ventas_mensuales = []
+for mes, venta_mensual in enumerate(ventas_mensuales):                                    #Utilizamos enumerate para no utilizar un contador
+    mont_ventas_mensuales = len(venta_mensual)                                            #Se utiliza len porque la longitud es igual a la cantidad de ventas
+    conteo= [mont_ventas_mensuales,mes]
+
+    monto_ventas_mensuales.append(conteo)
+
+print('No. de ventas mensuales:')
+
+for monto in monto_ventas_mensuales:
+    print(monto)
+                                     
+monto_ventas_mensuales.sort(reverse=True)                                     #Ordenar para saber los meses en donde se tuvieron mayores ventas
+
+print('No. de ventas de mayor a menor:')
+
+for par in monto_ventas_mensuales:
+    print(par)
+
+#E) REVIEWS
+
+
+product_review = []                                                                         #lista de listas (id producto, no. de reviews, ventas)
+for producto in lifestore_products:
+    id_producto = producto[0]
+    sublista = [id_producto, 0, 0]
+    product_review.append(sublista)
+print(product_review)
+
+for product in product_review:
+    print(product)
+
+for venta in lifestore_sales:
+    id_producto = venta[1]
+    review = venta[2]
+    indice = id_producto -1
+    product_review[indice][1] += review                            
+    product_review[indice][2] += 1
+
+for indice, lista in enumerate(product_review):                                    #Para calcular el promedio
+    suma = lista[1]
+    cantidad = lista[2]
+    if cantidad >0:
+        calificacion_promedio = suma/cantidad
+        product_review[indice][1] = calificacion_promedio
+ 
+mejores_calificados = []                                                         #Para ordenar los productos mejores calificados
+for lista in product_review:
+    sublista = [lista[1], lista[0]]
+    mejores_calificados.append(sublista)
+
+mejores_calificados.sort(reverse=True)
+
+print('Mejores calificados:')
+for produc in mejores_calificados[:5]: 
+    print(produc)
+
+
+peores_calificados = []                                                         #Para ordenar los productos mejores calificados
+for lista in product_review:
+    sublista = [lista[1], lista[0]]
+    peores_calificados.append(sublista)
+
+peores_calificados.sort(reverse=False)
+
+print('Peores calificados:')
+for produc in mejores_calificados[:5]: 
+    print(produc)
+
+
+
+
+#F) MEJORES VENDIDOS
+
+mejores_vendidos = []                                                         #Para ordenar los productos mejores calificados
+for lista in product_review:
+    sublista = [lista[2], lista[0], lista[1]]
+    mejores_vendidos.append(sublista)
+
+mejores_vendidos.sort(reverse=True)
+
+print('Productos mejores vendidos:')
+for produc in mejores_vendidos[:5]: 
+    print(produc)
+
+print('estos son los peores')
+
+peores_vendidos = []                                                         #Para ordenar los productos mejores calificados
+for lista in product_review:
+    sublista = [lista[2], lista[0], lista[1]]
+    peores_vendidos.append(sublista)
+
+peores_vendidos.sort(reverse=False)
+
+print('Productos peor vendidos:')
+for produc in peores_vendidos[:5]: 
+    print(produc)
+
+
+#G) BUSQUEDAS:
+# ESQUELETO: lifestore_searches = [id_search, id product]
+
+busquedas = lifestore_searches
+
+
+lista_id_producto = []
+
+
+for producto in range (0,len(busquedas)):
+    lista_id_producto.append(busquedas[producto][1])
+    print (busquedas)                                                           #Print de verificación
+    
+print ('Busquedas:', busquedas)                                                 #resultado final con los datos filtrados, solo queda id del producto
+
+diccionario = {}
+
+for produc in lista_id_producto:                                                  #Aplico for para que python sepa de que lista estoyhablando y se llenen las llaves/key
+   if produc in diccionario:                                                      #Cuento la frecuencia con las llaves/key (diccionario)
+      diccionario[produc] += 1
+   else:                                                                          #Creo la llave/key (diccionario)   
+      diccionario[produc] = 1
+
+print(diccionario)
+dict = diccionario
+
+dict_acomodado = (sorted(dict.items()))
+
+print(dict_acomodado)                                                            #Print para comprobar que voy bien
+
+
+for dict in dict_acomodado: 
+    print(dict)
+    print (f'La frecuencia de la búsqueda de este id es:{(dict)}')
+
+import operator
+segundo_diccionario = {1: 10, 2: 24, 3: 55, 4: 41, 5: 30, 6: 10, 7: 31, 8: 20, 9: 1, 10: 1, 11: 5, 12: 15, 13: 2, 15: 4, 17: 3, 18: 11, 21: 15, 22: 5, 25: 10, 26: 5, 27: 1, 28: 5, 29: 60, 31: 10, 35: 1, 39: 3, 40: 10, 42: 23, 44: 25, 45: 1, 46: 4, 47: 30, 48: 27, 49: 10, 50: 7, 51: 11, 52: 5, 54: 263, 56: 2, 57: 107, 59: 1, 63: 4, 66: 15, 67: 32, 70: 1, 73: 4, 74: 6, 76: 2, 80: 1, 84: 10, 85: 35, 89: 7, 91: 2, 93: 1, 94: 6, 95: 3} 
+
+sorted_x = sorted(segundo_diccionario.items(), key=operator.itemgetter(1))
+print(sorted_x)
+
+print('Menos buscados')
+
+for sorte in sorted_x[:10]:
+    print(sorte)
+
+print('Más buscados:')
+
+mas_buscados = [(5, 30),(47, 30), (7, 31), (67, 32), (85, 35),(4, 41), (3, 55), (29, 60), (57, 107), (54, 263)]
+
+#MENU
+
+mejores_vendidos = ([50, 54, 4.72,],
+[42, 3, 4.809523809523809],
+[20, 5, 4.7],
+[18, 42, 4.555555555555555],
+[15, 57, 4.866666666666666])
+menor_venta = ([0, 9, 0],
+[0, 14, 0],
+[0, 15, 0],
+[0, 16, 0])
+mejores_reseñas= ([5.0, 85],
+[5.0, 84],
+[5.0, 67],
+[5.0, 66],
+[5.0, 60])
+peores_reseñas= ([5.0, 85],
+[5.0, 84],
+[5.0, 67],
+[5.0, 66],
+[5.0, 60])
+menos_buscados = ((9, 1),
+(10, 1),
+(27, 1),
+(35, 1),
+(45, 1),
+(59, 1),
+(70, 1),
+(80, 1),
+(93, 1),
+(13, 2))
+mas_buscados = [(5, 30),(47, 30), (7, 31), (67, 32), (85, 35),(4, 41), (3, 55), (29, 60), (57, 107), (54, 263)]
+
+def main():
+    mensaje = f"""
+\tBienvenido a LIFESTORE
+
+¿Qué quieres consultar?:
+            a = {mejores_vendidos} 
+            b = {menor_venta}
+            c={mejores_reseñas}
+            d={peores_reseñas}
+            e={menos_buscados}
+            f={mas_buscados}
+    
+    1. mejores_vendidos
+    2. menor_venta
+    3.mejores_reseñas
+    4.peores_reseñas
+    5.-menos_buscados
+    6.-mas_buscados
+    q. Salir del programa
+    """
+    while True:
+        print(mensaje)
+        eleccion = input('selección > ')
+        if eleccion == '1':
+            print('\nEl resultado de los más buscados:\n\t',mejores_vendidos)
+        elif eleccion == '2':
+            print('\nEl resultado de las menores ventas son:\n\t', menor_venta)
+        elif eleccion == '3':
+            print('\nEl resultado de las mejores reseñas es:\n\t', mejores_reseñas)
+        elif eleccion == '4':
+            print('\nEl resultado de las peores reseñas es:\n\t', peores_reseñas) # Este es el operador de potencia en python '**', se lee como 'a' elevado a la potencia 'b'
+        elif eleccion == '5':
+            print('\nEl resultado de lo menos buscado es:\n\t', menos_buscados)
+        elif eleccion == '6':
+            print('\nEl resultado de lo más buscado es:\n\t', mas_buscados)    
+        elif eleccion == 'q':
+            print('\nAdiós!\n')
+            exit() 
+        else:
+            print(f'\nerror: "{eleccion}" no es una elección valida. Intente de nuevo\n')
+        mensaje = f"""
+¿Quieres continuar tu búsqueda?:
+            a = {mejores_vendidos} 
+            b = {menor_venta}
+            c={mejores_reseñas}
+            d={peores_reseñas}
+            e = {menos_buscados}
+            f= {mas_buscados}
+
+    1. mejores_vendidos
+    2. menor_venta
+    3. mejores_reseñas
+    4. peores_reseñas
+    5.-menos_buscados
+    6.-mas_buscados
+    q. salir del programa
+    """
+
+if __name__ == '__main__':
+    main()
